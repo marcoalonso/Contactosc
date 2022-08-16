@@ -41,9 +41,14 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Contactos" id="xpl-yT-OwK">
-                        <barButtonItem key="rightBarButtonItem" title="Agregar Nuevo" id="fEo-pU-KIz"/>
+                        <barButtonItem key="rightBarButtonItem" title="Agregar Nuevo" id="fEo-pU-KIz">
+                            <connections>
+                                <action selector="nuevoContactoButton:" destination="BYZ-38-t0r" id="u50-wI-PKC"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="tablaContactos" destination="LVD-2a-zoC" id="gPs-0k-aRO"/>
                         <segue destination="PCr-2d-N2j" kind="show" identifier="editar" id="RTX-HU-Vf5"/>
                     </connections>
                 </viewController>
@@ -73,7 +78,7 @@
                                         <subviews>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="dOH-xK-NdA">
                                                 <rect key="frame" x="0.0" y="0.0" width="374" height="45"/>
-                                                <fontDescription key="fontDescription" type="system" pointSize="19"/>
+                                                <fontDescription key="fontDescription" name="Avenir-Book" family="Avenir" pointSize="0.0"/>
                                                 <textInputTraits key="textInputTraits"/>
                                             </textField>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="rbR-zH-VZ2">
