@@ -15,7 +15,7 @@ class ViewController: UIViewController {
     
     // MARK: - Variables
     var contactos: [Contacto] = []
-    // ["David", "Pablo", "Rogelio", "Rogelio", "Fanny", "Raul"]
+    var contactoEditar: Contacto?
     
     func conexion() -> NSManagedObjectContext {
         let delegate = UIApplication.shared.delegate as! AppDelegate
@@ -24,6 +24,8 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        leerContactos()
         
         tablaContactos.delegate = self
         tablaContactos.dataSource = self
@@ -103,6 +105,16 @@ class ViewController: UIViewController {
         }
     }
     
+    func leerContactos(){
+        let contexto = conexion()
+        let solicitud : NSFetchRequest<Contacto> = Contacto.fetchRequest()
+        do {
+            contactos =  try contexto.fetch(solicitud)
+        } catch  {
+            print("Error al leer de core data,",error.localizedDescription)
+        }
+    }
+    
 }
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
@@ -117,5 +129,14 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         return celda
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        contactoEditar = contactos[indexPath.row]
+        
+        performSegue(withIdentifier: "editar", sender: self)
+    }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let EditarContacto = segue.destination as! EditarViewController
+        EditarContacto.recibirContacto = contactoEditar
+    }
 }

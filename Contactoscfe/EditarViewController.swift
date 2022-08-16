@@ -8,22 +8,39 @@
 import UIKit
 
 class EditarViewController: UIViewController {
+    
+    var recibirContacto: Contacto?
+    
+    @IBOutlet weak var emailEditar: UITextField!
+    @IBOutlet weak var direccionEditar: UITextField!
+    @IBOutlet weak var telefonoEditar: UITextField!
+    @IBOutlet weak var nombreEditar: UITextField!
+    @IBOutlet weak var imagenEditar: UIImageView!
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        mostrarContactoEditar()
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    func mostrarContactoEditar(){
+        nombreEditar.text = recibirContacto?.nombre
+        telefonoEditar.text = "\(recibirContacto?.telefono ?? 0)"
+        direccionEditar.text = recibirContacto?.direccion
+        emailEditar.text = recibirContacto?.email
+        imagenEditar.image = UIImage(data: (recibirContacto?.imagen!)!)
+        
     }
-    */
+    
+    @IBAction func guardarButton(_ sender: Any) {
+        
+    }
+    
+    @IBAction func cancelarBtn(_ sender: Any) {
+        
+    }
+    
+   
 
 }
