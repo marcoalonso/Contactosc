@@ -6,10 +6,14 @@
 //
 
 import UIKit
+import CoreData
 
 class EditarViewController: UIViewController {
     
     var recibirContacto: Contacto?
+    
+    // MARK: - Contexto
+    let contexto = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     @IBOutlet weak var emailEditar: UITextField!
     @IBOutlet weak var direccionEditar: UITextField!
@@ -22,6 +26,23 @@ class EditarViewController: UIViewController {
         super.viewDidLoad()
 
         mostrarContactoEditar()
+        
+        gesturaImagen()
+    }
+    
+    func gesturaImagen(){
+        let gestura = UITapGestureRecognizer(target: self, action: #selector(clickImagen))
+        gestura.numberOfTapsRequired = 1
+        gestura.numberOfTouchesRequired = 1
+        imagenEditar.addGestureRecognizer(gestura)
+        imagenEditar.isUserInteractionEnabled = true
+    }
+    
+    @objc func clickImagen(){
+        let vc = UIImagePickerController()
+        vc.delegate = self
+        vc.allowsEditing = true
+        present(vc, animated: true)
     }
     
     func mostrarContactoEditar(){
@@ -34,13 +55,33 @@ class EditarViewController: UIViewController {
     }
     
     @IBAction func guardarButton(_ sender: Any) {
+        recibirContacto?.nombre = nombreEditar.text
+        recibirContacto?.telefono = Int64(telefonoEditar.text ?? "0")!
+        recibirContacto?.direccion = direccionEditar.text
+        recibirContacto?.email = emailEditar.text
+        recibirContacto?.imagen = imagenEditar.image?.pngData()
+        
+        try? contexto.save()
+        
+        navigationController?.popToRootViewController(animated: true)
         
     }
     
     @IBAction func cancelarBtn(_ sender: Any) {
         
     }
-    
-   
 
+}
+
+extension EditarViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let imagenSeleccionada = info[UIImagePickerController.InfoKey(rawValue: "UIImagePickerControllerEditedImage")] as? UIImage {
+            imagenEditar.image = imagenSeleccionada
+        }
+        picker.dismiss(animated: true)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
 }
