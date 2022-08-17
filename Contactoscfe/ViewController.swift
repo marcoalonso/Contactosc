@@ -26,7 +26,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+        //Registrar la celda personalizada en la tabla
+        tablaContactos.register(UINib(nibName: "TableViewCell", bundle: nil), forCellReuseIdentifier: "celda")
         
         tablaContactos.delegate = self
         tablaContactos.dataSource = self
@@ -151,15 +152,33 @@ extension ViewController: MFMailComposeViewControllerDelegate {
         switch result {
         case .cancelled:
             print("Cancelado")
+            DispatchQueue.main.async {
+                
+                self.mostrarMSJUsuario(msj: "Cancelado")
+            }
+            
         case .saved:
             print("saved")
+            DispatchQueue.main.async {
+                self.mostrarMSJUsuario(msj: "Se Guardado en borradores")
+            }
         case .sent:
             print("sent")
+            DispatchQueue.main.async {
+                self.mostrarMSJUsuario(msj: "Ah sido enviado")
+            }
         case .failed:
-            print("failed")
+            mostrarMSJUsuario(msj: "Fallo")
         }
         
         controller.dismiss(animated: true)
+    }
+    
+    func mostrarMSJUsuario(msj: String){
+        let alerta = UIAlertController(title: "TU CORREO:", message: msj, preferredStyle: .alert)
+        let accionAceptar = UIAlertAction(title: "Aceptar", style: .default, handler: nil)
+        alerta.addAction(accionAceptar)
+        present(alerta, animated: true, completion: nil)
     }
     
     
@@ -171,11 +190,19 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let celda = tablaContactos.dequeueReusableCell(withIdentifier: "celda", for: indexPath)
-        celda.textLabel?.text = contactos[indexPath.row].nombre
-        celda.detailTextLabel?.text = "\(contactos[indexPath.row].telefono)"
-        celda.imageView?.image = UIImage(data: contactos[indexPath.row].imagen!)
+        
+        let celda = tablaContactos.dequeueReusableCell(withIdentifier: "celda", for: indexPath) as! TableViewCell
+        
+        celda.nombreContacto.text = contactos[indexPath.row].nombre
+        celda.telefonoContacto.text = "\(contactos[indexPath.row].telefono)"
+        celda.emailContacto.text = contactos[indexPath.row].email
+        celda.direccionContacto.text = contactos[indexPath.row].direccion
+        celda.imagenContacto.image = UIImage(data: contactos[indexPath.row].imagen!)
         return celda
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 120
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
