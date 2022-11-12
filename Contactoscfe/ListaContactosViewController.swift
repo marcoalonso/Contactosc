@@ -9,7 +9,7 @@ import UIKit
 import CoreData
 import MessageUI
 
-class ViewController: UIViewController {
+class ListaContactosViewController: UIViewController {
     
     
     @IBOutlet weak var tablaContactos: UITableView!
@@ -17,6 +17,7 @@ class ViewController: UIViewController {
     // MARK: - Variables
     var contactos: [Contacto] = []
     var contactoEditar: Contacto?
+    private var direccionVisualizar: String = ""
     
     func conexion() -> NSManagedObjectContext {
         let delegate = UIApplication.shared.delegate as! AppDelegate
@@ -125,21 +126,23 @@ class ViewController: UIViewController {
 }
 
 // MARK: - Enviar Email Protocol
-extension ViewController: MFMailComposeViewControllerDelegate {
+extension ListaContactosViewController: MFMailComposeViewControllerDelegate {
     func showMail(correo: String, nombre: String){
         if !MFMailComposeViewController.canSendMail() {
             print("No esta configurada ninguna cuenta de correo")
+        } else {
+            //Si se pueda enviar
+            let composeVC = MFMailComposeViewController()
+            composeVC.mailComposeDelegate = self
+            
+            //Configurar el cueroo del correo
+            composeVC.setToRecipients(["\(correo)"])
+            composeVC.setSubject("Hola \(nombre)")
+            composeVC.setMessageBody("", isHTML: false)
+            self.present(composeVC, animated: true)
         }
         
-        //Si se pueda enviar
-        let composeVC = MFMailComposeViewController()
-        composeVC.mailComposeDelegate = self
         
-        //Configurar el cueroo del correo
-        composeVC.setToRecipients(["\(correo)"])
-        composeVC.setSubject("Hola \(nombre)")
-        composeVC.setMessageBody("", isHTML: false)
-        self.present(composeVC, animated: true)
     }
     
     
@@ -184,7 +187,7 @@ extension ViewController: MFMailComposeViewControllerDelegate {
     
 }
 
-extension ViewController: UITableViewDelegate, UITableViewDataSource {
+extension ListaContactosViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         contactos.count
     }
@@ -194,9 +197,9 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         let celda = tablaContactos.dequeueReusableCell(withIdentifier: "celda", for: indexPath) as! TableViewCell
         
         celda.nombreContacto.text = contactos[indexPath.row].nombre
-        celda.telefonoContacto.text = "\(contactos[indexPath.row].telefono)"
-        celda.emailContacto.text = contactos[indexPath.row].email
-        celda.direccionContacto.text = contactos[indexPath.row].direccion
+        celda.telefonoContacto.text = "📞 \(contactos[indexPath.row].telefono)"
+        celda.emailContacto.text = "📨 \(contactos[indexPath.row].email ?? "")"
+        celda.direccionContacto.text = "🏡 \(contactos[indexPath.row].direccion ?? "")"
         celda.imagenContacto.image = UIImage(data: contactos[indexPath.row].imagen!)
         return celda
     }
@@ -207,13 +210,21 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         contactoEditar = contactos[indexPath.row]
-        
+        direccionVisualizar = self.contactos[indexPath.row].direccion ?? ""
         performSegue(withIdentifier: "editar", sender: self)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let EditarContacto = segue.destination as! EditarViewController
-        EditarContacto.recibirContacto = contactoEditar
+        if segue.identifier == "editar" {
+            let EditarContacto = segue.destination as! EditarViewController
+            EditarContacto.recibirContacto = contactoEditar
+        }
+        
+        if segue.identifier == "mapa" {
+            let direccionMapa = segue.destination as! MapaViewController
+            direccionMapa.direccionUser = direccionVisualizar
+        }
+        
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -226,9 +237,16 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
             self.tablaContactos.reloadData()
         }
         
+        let accionMapa = UIContextualAction(style: .normal, title: "") { _, _, _ in
+            self.performSegue(withIdentifier: "mapa", sender: self)
+        }
+        
+        accionMapa.image = UIImage(systemName: "mappin.and.ellipse")
+        accionMapa.backgroundColor = .blue
+        
         accionEliminar.image = UIImage(systemName: "trash")
         accionEliminar.backgroundColor = .red
-        return UISwipeActionsConfiguration(actions: [accionEliminar])
+        return UISwipeActionsConfiguration(actions: [accionEliminar, accionMapa])
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -243,8 +261,12 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
             
             //Extraer el num telefono
             //guard let numTelefono = "\(self.contactos[indexPath.row].telefono)" else { return }
+            let numero: Int64 = self.contactos[indexPath.row].telefono
+                
+            let numString = String(numero)
+        
             
-            if let llamadaURL = URL(string: "TEL://8181814990") {
+            if let llamadaURL = URL(string: "TEL://\(numString)") {
                 let aplicacionLllamda : UIApplication = UIApplication.shared
                 if (aplicacionLllamda.canOpenURL(llamadaURL)) {
                     aplicacionLllamda.open(llamadaURL, options: [:], completionHandler: nil)

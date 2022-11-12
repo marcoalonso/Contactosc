@@ -30,6 +30,10 @@ class EditarViewController: UIViewController {
         gesturaImagen()
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
+    }
+    
     func gesturaImagen(){
         let gestura = UITapGestureRecognizer(target: self, action: #selector(clickImagen))
         gestura.numberOfTapsRequired = 1
@@ -68,7 +72,7 @@ class EditarViewController: UIViewController {
     }
     
     @IBAction func cancelarBtn(_ sender: Any) {
-        
+        navigationController?.popToRootViewController(animated: true)
     }
 
 }
