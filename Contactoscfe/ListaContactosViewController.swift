@@ -136,6 +136,10 @@ extension ListaContactosViewController: UITextFieldDelegate {
         return true
     }
     
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        print(textField.text)
+    }
+    
     //2.- Identificar cuando el usuario termina de editar y que pueda borrar el contenido del textField
     func textFieldDidEndEditing(_ textField: UITextField) {
         //Hacer algo
