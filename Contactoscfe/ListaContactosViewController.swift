@@ -20,6 +20,9 @@ class ListaContactosViewController: UIViewController {
     var contactoEditar: Contacto?
     private var direccionVisualizar: String = ""
     
+    //Predicados en core data para filtrar elementos
+    var commitPredicate: NSPredicate?
+    
     func conexion() -> NSManagedObjectContext {
         let delegate = UIApplication.shared.delegate as! AppDelegate
         return delegate.persistentContainer.viewContext
@@ -115,8 +118,25 @@ class ListaContactosViewController: UIViewController {
     }
     
     func leerContactos(){
+        self.contactos.removeAll()
         let contexto = conexion()
         let solicitud : NSFetchRequest<Contacto> = Contacto.fetchRequest()
+        do {
+            contactos =  try contexto.fetch(solicitud)
+            print("Debug: Read DB \(contactos)")
+        } catch  {
+            print("Error al leer de core data,",error.localizedDescription)
+        }
+        tablaContactos.reloadData()
+    }
+    
+    func buscarContacto(filtro: String){
+        self.commitPredicate = NSPredicate(format: "nombre CONTAINS[c] '\(filtro)'")
+        
+        let contexto = conexion()
+        let solicitud : NSFetchRequest<Contacto> = Contacto.fetchRequest()
+        solicitud.predicate = commitPredicate
+        
         do {
             contactos =  try contexto.fetch(solicitud)
         } catch  {
@@ -137,13 +157,16 @@ extension ListaContactosViewController: UITextFieldDelegate {
     }
     
     func textFieldDidChangeSelection(_ textField: UITextField) {
-        print(textField.text)
+        if textField.text == "" {
+            leerContactos()
+        }
+        buscarContacto(filtro: textField.text ?? "M")
     }
     
     //2.- Identificar cuando el usuario termina de editar y que pueda borrar el contenido del textField
     func textFieldDidEndEditing(_ textField: UITextField) {
         //Hacer algo
-        buscarContactoTF.text = ""
+        buscarContacto(filtro: textField.text ?? "M")
         //ocultar teclado
         buscarContactoTF.endEditing(true)
     }
@@ -277,10 +300,12 @@ extension ListaContactosViewController: UITableViewDelegate, UITableViewDataSour
         }
         
         let accionMapa = UIContextualAction(style: .normal, title: "") { _, _, _ in
+            self.direccionVisualizar = self.contactos[indexPath.row].direccion ?? "Morelia, Michoacan"
             self.performSegue(withIdentifier: "mapa", sender: self)
         }
         
         let accionEditar = UIContextualAction(style: .normal, title: "") { _, _, _ in
+            self.contactoEditar = self.contactos[indexPath.row]
             self.performSegue(withIdentifier: "editar", sender: self)
         }
         
