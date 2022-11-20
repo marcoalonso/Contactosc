@@ -11,6 +11,7 @@ import MessageUI
 
 class ListaContactosViewController: UIViewController {
     
+    @IBOutlet weak var buscarContactoTF: UITextField!
     
     @IBOutlet weak var tablaContactos: UITableView!
     
@@ -26,6 +27,7 @@ class ListaContactosViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        buscarContactoTF.delegate = self
         
         //Registrar la celda personalizada en la tabla
         tablaContactos.register(UINib(nibName: "TableViewCell", bundle: nil), forCellReuseIdentifier: "celda")
@@ -124,6 +126,35 @@ class ListaContactosViewController: UIViewController {
     }
     
 }
+//MARK: UITextFieldDelegate
+extension ListaContactosViewController: UITextFieldDelegate {
+    //1.- Habilitar el boton del teclado virtual
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        print("Hacer algo ")
+        //ocultar teclado
+        buscarContactoTF.endEditing(true)
+        return true
+    }
+    
+    //2.- Identificar cuando el usuario termina de editar y que pueda borrar el contenido del textField
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        //Hacer algo
+        buscarContactoTF.text = ""
+        //ocultar teclado
+        buscarContactoTF.endEditing(true)
+    }
+    
+    //3.- Evitar que el usuario no escriba nada
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        if buscarContactoTF.text != "" {
+            return true
+        } else {
+            //el usuario no escribio nada
+            buscarContactoTF.placeholder = "Debes escribir algo.."
+            return false
+        }
+    }
+}
 
 // MARK: - Enviar Email Protocol
 extension ListaContactosViewController: MFMailComposeViewControllerDelegate {
@@ -214,6 +245,10 @@ extension ListaContactosViewController: UITableViewDelegate, UITableViewDataSour
         performSegue(withIdentifier: "editar", sender: self)
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "editar" {
             let EditarContacto = segue.destination as! EditarViewController
@@ -241,12 +276,19 @@ extension ListaContactosViewController: UITableViewDelegate, UITableViewDataSour
             self.performSegue(withIdentifier: "mapa", sender: self)
         }
         
+        let accionEditar = UIContextualAction(style: .normal, title: "") { _, _, _ in
+            self.performSegue(withIdentifier: "editar", sender: self)
+        }
+        
+        accionEditar.image = UIImage(systemName: "pencil")
+        accionEditar.backgroundColor = .orange
+        
         accionMapa.image = UIImage(systemName: "mappin.and.ellipse")
         accionMapa.backgroundColor = .blue
         
         accionEliminar.image = UIImage(systemName: "trash")
         accionEliminar.backgroundColor = .red
-        return UISwipeActionsConfiguration(actions: [accionEliminar, accionMapa])
+        return UISwipeActionsConfiguration(actions: [accionEliminar, accionMapa, accionEditar])
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
